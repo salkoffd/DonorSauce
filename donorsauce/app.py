@@ -21,8 +21,10 @@ from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
 
-path_database = os.path.join("db", "DonorSauce.sqlite")
-app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///db/DonorSauce.sqlite"
+# path_database = os.path.join("db", "DonorSauce.sqlite")
+# print("Path is: " + path_database)
+path_database = "DonorSauce.sqlite"
+app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///DonorSauce.sqlite"
 
 db = SQLAlchemy(app)
 
