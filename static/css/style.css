@@ -1,0 +1,85 @@
+body {
+  padding: 0;
+  margin: 0;
+  background-color: #212429;
+  color: white;
+}
+
+.navbar {
+  color: black;
+}
+
+.nav-item {
+  color: black;
+}
+
+.box_head {
+  text-align: center;
+  margin-top: 12px;
+  font-family: Verdana;
+  font-style: italic;
+  font-weight: bold;
+  /* color: #1fd5db; */
+  /* color: #e7c183; */
+}
+
+.box_head_center {
+  text-align: center;
+  margin-top: 10px;
+  /* margin-left: 10px; */
+  padding: 6px;
+  /* color: #1fd5db; */
+  /* color: #e7c183; */
+}
+
+.context {
+  margin-top: 24px;
+  margin-left: -30px;
+}
+
+.where {
+  text-align: center;
+}
+
+.sumHead1 {
+  margin-top: 24px;
+  margin-left: 120px;
+}
+
+#map,
+body,
+html {
+  height: 100%;
+}
+
+.leaflet-popup-content {
+  text-align: center;
+  line-height: 0.5;
+}
+
+.legend ul {
+  padding: 0;
+  margin: 0;
+  clear: both;
+  list-style-type: none;
+}
+
+.legend li {
+  display: inline-block;
+  width: 30px;
+  height: 22px;
+}
+
+.legend .min {
+  float: left;
+  padding-bottom: 5px;
+}
+
+.legend .max {
+  float: right;
+}
+
+.popup {
+  margin-top: 0;
+  margin-bottom: 0;
+}

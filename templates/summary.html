@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Donor Sauce Home</title>
+    <title>Donor Sauce Summary</title>
     <!-- Bootstrap stylesheet -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
         integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
@@ -31,7 +31,7 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarText">
             <ul class="navbar-nav ml-auto">
-                <li class="nav-item active">
+                <li class="nav-item">
                     <a class="nav-link" href="/">Home <span class="sr-only">(current)</span></a>
                 </li>
 
@@ -50,42 +50,36 @@
                 <li class="nav-item">
                     <a class="nav-link" href="/map">U.S. Map</a>
                 </li>
-                <li class="nav-item">
+                <li class="nav-item active">
                     <a class="nav-link" href="/summary">Summary</a>
                 </li>
             </ul>
         </div>
     </nav>
 
+    <h3 class="sumHead1">Top Donors and Recipients</h3>
+    <br>
     <div class="container">
         <div class="row">
-            <div class="context col-md-6">
-                <h4 class="where">Where does the money come from?</h4>
-                <p>
-                    Political campaigns cost millions of dollars. In 2018, over $5.7 billion was spent on congressional
-                    elections.
-                    Politicians are often times pressured to change their platforms to match donor interests. This
-                    project attemps to clarify political contributions: who receives
-                    money, who supplies it, and how much?
-                </p>
-                <br>
-                <h4 class="where">How to use this website</h4>
-                <p>
-                    This dataset can be viewed in several ways. Want to know your representative's donors?
-                    Head over to the maps page. Want to know which legislators receive money from a specific
-                    corporation?
-                    Select "Donors" from the Data drop-down menu and search for a corporation. Select "Summary" for
-                    overall
-                    statistics.
-                </p>
+            <div class="col-md-6">
+                <div id="topRecipientsGraph"></div>
             </div>
-            <div class="col-md-4">
-                <img src="{{ url_for('static', filename='media/flag_inverted2.jpg') }}" alt="Inverted flag">
+            <div class="col-md-6">
+                <div id="topDonorGraph"></div>
+            </div>
+        </div>
+        <br>
+        <div class="row">
+            <div class="col-md-6">
+                <div id="ageGraph"></div>
             </div>
         </div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/5.5.0/d3.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/5.5.0/d3.js"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <!-- My javascript file -->
+    <script src="{{ url_for('static', filename='js/logic_summary.js') }}"></script>
     <!-- Bootstrap stuff -->
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
         integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
