@@ -82,10 +82,13 @@ def legislators():
         # add top donors to dictionary
         d[i]['top_donors'] = {}
         d[i]['top_donors_amounts'] = {}
+        # take out naughty characters in name
+        name_first = tuple(stats)[0].replace("'", "")
+        name_last = tuple(stats)[1].replace("'", "")
         try:
             cur.execute(f"SELECT donors.name, donations.amount FROM legislators, donors, donations \
                 WHERE legislators.id = donations.legislator AND donors.name = donations.donor AND \
-                legislators.first_name = '{tuple(stats)[0]}' AND legislators.last_name = '{tuple(stats)[1]}' \
+                legislators.first_name = '{name_first}' AND legislators.last_name = '{name_last}' \
                 ORDER BY donations.amount desc LIMIT 5")
             topDonors = tuple(cur.fetchall())
             for iii in range(len(topDonors)):
