@@ -26,6 +26,7 @@ app = Flask(__name__)
 path_database = "DonorSauce.sqlite"
 app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///DonorSauce.sqlite"
 
+
 db = SQLAlchemy(app)
 
 # reflect an existing database into a new model
@@ -91,7 +92,7 @@ def legislators():
             cur.execute(f"SELECT donors.name, donations.amount FROM legislators, donors, donations \
                 WHERE legislators.id = donations.legislator AND donors.name = donations.donor AND \
                 legislators.first_name = '{name_first}' AND legislators.last_name = '{name_last}' \
-                ORDER BY donations.amount desc LIMIT 5")
+                ORDER BY donations.amount desc LIMIT 3")
             topDonors = tuple(cur.fetchall())
             for iii in range(len(topDonors)):
                 d[i]['top_donors'][iii] = topDonors[iii][0]
@@ -170,34 +171,81 @@ def summary_info():
 
     # Query ages and amount (Democrats)
     d["democrat_info"] = {}
-    cur.execute("SELECT age, sum(amount) as total FROM donations, legislators \
+    cur.execute("SELECT age, sum(amount) as total, first_name, last_name FROM donations, legislators \
     WHERE donations.legislator=legislators.id AND legislators.party='Democrat' \
     GROUP BY legislators.id ORDER BY age DESC")
     democratInfo = tuple(cur.fetchall())
     ages = []
     amounts = []
+    names = []
     for i in range(len(democratInfo)):
         ages.append(democratInfo[i][0])
         amounts.append(democratInfo[i][1])
+        names.append(democratInfo[i][2] + " " + democratInfo[i][3])
     d["democrat_info"]["ages"] = ages
     d["democrat_info"]["amounts"] = amounts
+    d["democrat_info"]["names"] = names
 
     # Query ages and amount (Republicans)
     d["republican_info"] = {}
-    cur.execute("SELECT age, sum(amount) as total FROM donations, legislators \
+    cur.execute("SELECT age, sum(amount) as total, first_name, last_name FROM donations, legislators \
     WHERE donations.legislator=legislators.id AND legislators.party='Republican' \
     GROUP BY legislators.id ORDER BY age DESC")
     republicanInfo = tuple(cur.fetchall())
     ages = []
     amounts = []
+    names = []
     for i in range(len(republicanInfo)):
         ages.append(republicanInfo[i][0])
         amounts.append(republicanInfo[i][1])
+        names.append(republicanInfo[i][2] + " " + republicanInfo[i][3])
     d["republican_info"]["ages"] = ages
     d["republican_info"]["amounts"] = amounts
+    d["republican_info"]["names"] =  names
+
+    # Query ages and amount (Independent)
+    d["independent_info"] = {}
+    cur.execute("SELECT age, sum(amount) as total, first_name, last_name FROM donations, legislators \
+    WHERE donations.legislator=legislators.id AND legislators.party='Independent' \
+    GROUP BY legislators.id ORDER BY age DESC")
+    independentInfo = tuple(cur.fetchall())
+    ages = []
+    amounts = []
+    names = []
+    for i in range(len(independentInfo)):
+        ages.append(independentInfo[i][0])
+        amounts.append(independentInfo[i][1])
+        names.append(independentInfo[i][2] + " " + independentInfo[i][3])
+    d["independent_info"]["ages"] = ages
+    d["independent_info"]["amounts"] = amounts
+    d["independent_info"]["names"] =  names
 
     return jsonify(d)
-    
+
+@app.route("/api/<first_name>+<last_name>")
+def legislator_detail(first_name, last_name):
+    # connect to database
+    con = sqlite3.connect(path_database)
+    con.row_factory = sqlite3.Row
+    cur = con.cursor()
+    # get legislator info
+    statement = f"SELECT donors.name, donations.amount \
+                FROM legislators, donors, donations \
+                WHERE legislators.id = donations.legislator AND donors.name = donations.donor AND \
+                legislators.first_name = '{first_name}' AND legislators.last_name = '{last_name}' \
+                ORDER BY donations.amount desc"
+    cur.execute(statement)
+    results = tuple(cur.fetchall())
+    # construct dictionary
+    d = {}
+    d['recipient'] = first_name + " " + last_name
+    donorInfo = []
+    for i in range(len(results)):
+        n = results[i][0] + ", " + '${:,.0f}'.format(results[i][1])
+        donorInfo.append(n)
+    d["donors"] = donorInfo
+
+    return jsonify(d)
 
 
 if __name__ == "__main__":

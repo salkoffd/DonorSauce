@@ -87,11 +87,11 @@ function createMarkers(response) {
                 var leg_type = 'Senator'
             }
             else {
-                var leg_type = "Representative"
+                var leg_type = "Representative, District " + String(parseInt(response[i].district))
             }
             // create list of top donors
             var donorHTML = [];
-            for (ii = 0; ii < 5; ii++) {
+            for (ii = 0; ii < 3; ii++) {
                 thisDonorInfo = response[i].top_donors[ii] + ", " + response[i].top_donors_amounts[ii]
                 donorHTML = donorHTML + ("<p>" + thisDonorInfo + "</p>")
             }
@@ -105,6 +105,8 @@ function createMarkers(response) {
                     '<a href="' + response[i].url + '">' + response[i].url + '</a>' +
                     // add donor info
                     donorHTML +
+                    '<a href="/api/' + response[i].first_name + '+' + response[i].last_name + '">' + 
+                    'Full Donor List' + '</a>' +
                     "</div>"
                 );
         }

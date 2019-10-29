@@ -63,15 +63,17 @@ d3.json(url).then(function (response) {
         mode: 'markers',
         type: 'scatter',
         name: 'Democrats',
+        hovertext: response.democrat_info.names,
+        hoverinfo: "text",
         // text: ['A-1', 'A-2', 'A-3', 'A-4', 'A-5'],
         marker: {
-            size: 6,
+            size: 8,
             color: "#000bd4",
             line: {
-                width: 1
+                width: 0
             }
         },
-        opacity: 0.5
+        opacity: 0.6
     };
     var trace2 = {
         x: response.republican_info.ages,
@@ -79,18 +81,39 @@ d3.json(url).then(function (response) {
         mode: 'markers',
         type: 'scatter',
         name: 'Republicans',
+        hovertext: response.republican_info.names,
+        hoverinfo: "text",
         // text: ['A-1', 'A-2', 'A-3', 'A-4', 'A-5'],
         marker: {
-            size: 6,
+            size: 8,
             color: "#d60b0b",
             line: {
-                width: 1
+                width: 0
             }
         },
-        opacity: 0.5
+        opacity: 0.6
     };
 
-    var data = [trace1, trace2];
+    var trace3 = {
+        x: response.independent_info.ages,
+        y: response.independent_info.amounts,
+        mode: 'markers',
+        type: 'scatter',
+        name: 'Independent',
+        text: response.independent_info.names,
+        hoverinfo: "text",
+        // text: ['A-1', 'A-2', 'A-3', 'A-4', 'A-5'],
+        marker: {
+            size: 8,
+            color: "grey",
+            line: {
+                width: 0
+            }
+        },
+        opacity: 0.6
+    };
+
+    var data = [trace1, trace2, trace3];
 
     var layout = {
         xaxis: {
@@ -102,6 +125,9 @@ d3.json(url).then(function (response) {
         title: 'Age vs. Money Received',
         plot_bgcolor: "white",
         paper_bgcolor: "#e7c183",
+        hovermode:'closest',
+        height: 800,
+        width: 800
     };
 
     Plotly.newPlot('ageGraph', data, layout);
