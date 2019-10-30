@@ -2,6 +2,7 @@
 import sqlite3
 import os
 import json
+import psycopg2
 
 from sqlalchemy import func
 
@@ -21,10 +22,8 @@ from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
 
-# path_database = os.path.join("db", "DonorSauce.sqlite")
-# print("Path is: " + path_database)
-path_database = "DonorSauce.sqlite"
-app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///DonorSauce.sqlite"
+DATABASE_URL = os.environ['DATABASE_URL']
+app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
 
 
 db = SQLAlchemy(app)
@@ -67,8 +66,7 @@ def mapLegislators():
 def legislators():
 
     # connect to database
-    con = sqlite3.connect(path_database)
-    con.row_factory = sqlite3.Row
+    con = psycopg2.connect(DATABASE_URL, sslmode='require')
     cur = con.cursor()
     # get all legislator data
     cur.execute("SELECT first_name, last_name, sum(amount) as total, party, age, state, district, latitude, longitude, leg_type, url \
@@ -107,8 +105,7 @@ def legislators():
 @app.route("/api/donors")
 def donors():
     # connect to database
-    con = sqlite3.connect(path_database)
-    con.row_factory = sqlite3.Row
+    con = psycopg2.connect(DATABASE_URL, sslmode='require')
     cur = con.cursor()
     # get all legislator data
     cur.execute("SELECT * FROM donors")
@@ -139,8 +136,7 @@ def donors():
 @app.route("/api/summary")
 def summary_info():
     # connect to database
-    con = sqlite3.connect(path_database)
-    con.row_factory = sqlite3.Row
+    con = psycopg2.connect(DATABASE_URL, sslmode='require')
     cur = con.cursor()
     # initialize dictionary
     d= {}
@@ -225,8 +221,7 @@ def summary_info():
 @app.route("/api/<first_name>+<last_name>")
 def legislator_detail(first_name, last_name):
     # connect to database
-    con = sqlite3.connect(path_database)
-    con.row_factory = sqlite3.Row
+    con = psycopg2.connect(DATABASE_URL, sslmode='require')
     cur = con.cursor()
     # get legislator info
     statement = f"SELECT donors.name, donations.amount \
