@@ -22,30 +22,31 @@ from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
 
-DATABASE_URL = os.environ['DATABASE_URL']
-app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
+# DATABASE_URL = os.environ['DATABASE_URL']
+DATABASE_URL = "dbname=donorsauce user=postgres password=david8242"
+# app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
 
 
-db = SQLAlchemy(app)
+# db = SQLAlchemy(app)
 
-# reflect an existing database into a new model
-Base = automap_base()
-# reflect the tables
-Base.prepare(db.engine, reflect=True)
+# # reflect an existing database into a new model
+# Base = automap_base()
+# # reflect the tables
+# Base.prepare(db.engine, reflect=True)
 
-# Save references to each table
-Legislators = Base.classes.legislators
-Donors = Base.classes.donors
-Donations = Base.classes.donations
+# # Save references to each table
+# Legislators = Base.classes.legislators
+# Donors = Base.classes.donors
+# Donations = Base.classes.donations
 
 # -------------------------------------------------------------------------
 
 
-@app.before_first_request
-def setup():
-    # Recreate database each time for demo
-    db.drop_all()
-    db.create_all()
+# @app.before_first_request
+# def setup():
+#     # Recreate database each time for demo
+#     db.drop_all()
+#     db.create_all()
 
 # create route that renders index.html template
 @app.route("/")
@@ -76,6 +77,8 @@ def legislators():
                     GROUP BY legislator \
                 ) t JOIN legislators l ON l.id=t.legislator")
     results = cur.fetchall()
+    print(results[0])
+    print(results)
     # get column names
     myKeys = results[0].keys()
     # build dictionary
