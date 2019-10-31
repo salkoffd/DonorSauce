@@ -69,8 +69,12 @@ def legislators():
     con = psycopg2.connect(DATABASE_URL, sslmode='require')
     cur = con.cursor()
     # get all legislator data
-    cur.execute("SELECT first_name, last_name, sum(amount) as total, party, age, state, district, latitude, longitude, leg_type, url \
-    from donations, legislators WHERE donations.legislator = legislators.id group by legislators.id")
+    cur.execute("SELECT l.first_name, l.last_name, t.total, l.party, l.age, l.state, l.district, l.latitude, l.longitude, l.leg_type, l.url \
+                FROM ( \
+                    SELECT sum(amount) as total, legislator \
+                    FROM donations \
+                    GROUP BY legislator \
+                ) t JOIN legislators l ON l.id=t.legislator")
     results = cur.fetchall()
     # get column names
     myKeys = results[0].keys()
