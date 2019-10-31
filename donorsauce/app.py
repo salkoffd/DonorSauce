@@ -242,6 +242,18 @@ def legislator_detail(first_name, last_name):
 
     return jsonify(d)
 
+@app.route("/api/test")
+def test():
+    # connect to database
+    con = psycopg2.connect(DATABASE_URL, sslmode='require')
+    cur = con.cursor()
+    # get legislator info
+    statement = "SELECT first_name, last_name FROM legislators \
+                WHERE legislators.first_name = 'Bernard' AND legislators.last_name = 'Sanders'"
+    cur.execute(statement)
+    results = tuple(cur.fetchall())
+    d = results
+    return jsonify(d)
 
 if __name__ == "__main__":
     app.run()
