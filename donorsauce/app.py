@@ -24,29 +24,29 @@ app = Flask(__name__)
 # path_database = os.path.join("db", "DonorSauce.sqlite")
 # print("Path is: " + path_database)
 path_database = "DonorSauce.sqlite"
-app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///DonorSauce.sqlite"
+# app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///DonorSauce.sqlite"
 
 
-db = SQLAlchemy(app)
+# db = SQLAlchemy(app)
 
-# reflect an existing database into a new model
-Base = automap_base()
-# reflect the tables
-Base.prepare(db.engine, reflect=True)
+# # reflect an existing database into a new model
+# Base = automap_base()
+# # reflect the tables
+# Base.prepare(db.engine, reflect=True)
 
-# Save references to each table
-Legislators = Base.classes.legislators
-Donors = Base.classes.donors
-Donations = Base.classes.donations
+# # Save references to each table
+# Legislators = Base.classes.legislators
+# Donors = Base.classes.donors
+# Donations = Base.classes.donations
 
 # -------------------------------------------------------------------------
 
 
-@app.before_first_request
-def setup():
-    # Recreate database each time for demo
-    db.drop_all()
-    db.create_all()
+# @app.before_first_request
+# def setup():
+#     # Recreate database each time for demo
+#     db.drop_all()
+#     db.create_all()
 
 # create route that renders index.html template
 @app.route("/")
