@@ -21,32 +21,9 @@ from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
 
-# path_database = os.path.join("db", "DonorSauce.sqlite")
-# print("Path is: " + path_database)
 path_database = "DonorSauce.sqlite"
-# app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///DonorSauce.sqlite"
-
-
-# db = SQLAlchemy(app)
-
-# # reflect an existing database into a new model
-# Base = automap_base()
-# # reflect the tables
-# Base.prepare(db.engine, reflect=True)
-
-# # Save references to each table
-# Legislators = Base.classes.legislators
-# Donors = Base.classes.donors
-# Donations = Base.classes.donations
 
 # -------------------------------------------------------------------------
-
-
-# @app.before_first_request
-# def setup():
-#     # Recreate database each time for demo
-#     db.drop_all()
-#     db.create_all()
 
 # create route that renders index.html template
 @app.route("/")
@@ -74,7 +51,6 @@ def legislators():
     cur.execute("SELECT first_name, last_name, sum(amount) as total, party, age, state, district, latitude, longitude, leg_type, url \
     from donations, legislators WHERE donations.legislator = legislators.id group by legislators.id")
     results = cur.fetchall()
-    print(results[0])
     # get column names
     myKeys = results[0].keys()
     # build dictionary
@@ -229,23 +205,37 @@ def legislator_detail(first_name, last_name):
     con = sqlite3.connect(path_database)
     con.row_factory = sqlite3.Row
     cur = con.cursor()
-    # get legislator info
-    statement = f"SELECT donors.name, donations.amount \
+    # get legislator info about donors
+    statement = "SELECT donors.name, donations.amount \
                 FROM legislators, donors, donations \
                 WHERE legislators.id = donations.legislator AND donors.name = donations.donor AND \
-                legislators.first_name = '{first_name}' AND legislators.last_name = '{last_name}' \
-                ORDER BY donations.amount desc"
+                legislators.first_name = '{}' AND legislators.last_name = '{}' \
+                ORDER BY donations.amount desc".format(first_name, last_name)
     cur.execute(statement)
     results = tuple(cur.fetchall())
     # construct dictionary
     d = {}
-    d['recipient'] = first_name + " " + last_name
     donorInfo = []
     for i in range(len(results)):
         n = results[i][0] + ", " + '${:,.0f}'.format(results[i][1])
         donorInfo.append(n)
     d["donors"] = donorInfo
 
+    # get legislator info about self
+    cur.execute("SELECT party, age, state, district, leg_type, url FROM legislators \
+                WHERE first_name = '{}' AND last_name = '{}'".format(first_name, last_name))
+    results = cur.fetchall()
+    # get column names
+    myKeys = results[0].keys()
+    print(myKeys)
+    # build dictionary
+    d['legislator_info'] = {}
+    d['legislator_info']['name'] = first_name + " " + last_name
+    for i in range(len(myKeys)):
+        print(i)
+        print(tuple(results)[0][i])
+        d['legislator_info'][myKeys[i]] = tuple(results)[0][i]
+    
     return jsonify(d)
 
 
