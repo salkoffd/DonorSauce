@@ -74,6 +74,7 @@ def legislators():
     cur.execute("SELECT first_name, last_name, sum(amount) as total, party, age, state, district, latitude, longitude, leg_type, url \
     from donations, legislators WHERE donations.legislator = legislators.id group by legislators.id")
     results = cur.fetchall()
+    print(results[0])
     # get column names
     myKeys = results[0].keys()
     # build dictionary
