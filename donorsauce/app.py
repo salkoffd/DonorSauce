@@ -3,12 +3,12 @@ import sqlite3
 import os
 import json
 import psycopg2
-import decimal
+from decimal import Decimal
 
 from sqlalchemy import func
 
-import flask
-import flask.json
+# import flask
+# import flask.json
 from flask import (
     Flask,
     render_template,
@@ -27,14 +27,14 @@ app = Flask(__name__)
 
 
 
-class MyJSONEncoder(flask.json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, decimal.Decimal):
-            # Convert decimal instances to strings.
-            return str(obj)
-        return super(MyJSONEncoder, self).default(obj)
+# class MyJSONEncoder(flask.json.JSONEncoder):
+#     def default(self, obj):
+#         if isinstance(obj, decimal.Decimal):
+#             # Convert decimal instances to strings.
+#             return str(obj)
+#         return super(MyJSONEncoder, self).default(obj)
 
-app.json_encoder = MyJSONEncoder  # to make jsons from objects with decimals in them
+# app.json_encoder = MyJSONEncoder  # to make jsons from objects with decimals in them
 
 
 DATABASE_URL = os.environ['DATABASE_URL']
@@ -110,7 +110,10 @@ def legislators():
     for i, stats in enumerate(results):
         d[i] = {}
         for ii, key in enumerate(myKeys):
-            d[i][key] = tuple(stats)[ii]
+            entry = tuple(stats)[ii]
+            if type(entry) == Decimal:
+                entry = float(entry)
+            d[i][key] = entry
         # add top donors to dictionary
         d[i]['top_donors'] = {}
         d[i]['top_donors_amounts'] = {}
@@ -131,7 +134,7 @@ def legislators():
             d[i]['top_donors'][iii] = {}
             d[i]['top_donors_amounts'][iii] = {}
 
-    return MyJSONEncoder(d)
+    return jsonify(d)
 
 # create route that returns donor data
 @app.route("/api/donors")
