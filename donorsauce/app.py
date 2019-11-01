@@ -22,8 +22,15 @@ from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
 
-# DATABASE_URL = os.environ['DATABASE_URL']
-DATABASE_URL = "dbname=donorsauce user=postgres password=david8242"
+DATABASE_URL = os.environ['DATABASE_URL']
+# DATABASE_URL = "dbname=donorsauce user=postgres password=david8242"
+
+# DATABASE_URL = 'postgresql+psycopg2://{user}:{pw}@{url}/{db}'.format(user="postgres",pw="david8242",url="127.0.0.1:5432",db="donorsauce")
+# print("database string= " + DATABASE_URL)
+# app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
+# app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False # silence the deprecation warning
+# db = SQLAlchemy(app)
+
 # app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
 
 
@@ -144,6 +151,7 @@ def donors():
 def summary_info():
     # connect to database
     con = psycopg2.connect(DATABASE_URL, sslmode='require')
+    # con = psycopg2.connect(DATABASE_URL) #db?
     cur = con.cursor()
     # initialize dictionary
     d= {}
