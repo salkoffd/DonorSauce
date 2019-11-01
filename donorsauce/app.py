@@ -3,9 +3,12 @@ import sqlite3
 import os
 import json
 import psycopg2
+import decimal
 
 from sqlalchemy import func
 
+import flask
+import flask.json
 from flask import (
     Flask,
     render_template,
@@ -21,6 +24,18 @@ from sqlalchemy import create_engine
 from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
+
+
+
+class MyJSONEncoder(flask.json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, decimal.Decimal):
+            # Convert decimal instances to strings.
+            return str(obj)
+        return super(MyJSONEncoder, self).default(obj)
+
+app.json_encoder = MyJSONEncoder  # to make jsons from objects with decimals in them
+
 
 DATABASE_URL = os.environ['DATABASE_URL']
 # DATABASE_URL = "dbname=donorsauce user=postgres password=david8242"
@@ -59,6 +74,7 @@ DATABASE_URL = os.environ['DATABASE_URL']
 @app.route("/")
 def home():
     return render_template("index.html")
+
 
 @app.route("/summary")
 def summary():
@@ -109,12 +125,13 @@ def legislators():
             topDonors = tuple(cur.fetchall())
             for iii in range(len(topDonors)):
                 d[i]['top_donors'][iii] = topDonors[iii][0]
-                d[i]['top_donors_amounts'][iii] = '${:,.0f}'.format(topDonors[iii][1])
+                d[i]['top_donors_amounts'][iii] = '${:,.0f}'.format(
+                    topDonors[iii][1])
         except:
             d[i]['top_donors'][iii] = {}
             d[i]['top_donors_amounts'][iii] = {}
 
-    return jsonify(d)
+    return MyJSONEncoder(d)
 
 # create route that returns donor data
 @app.route("/api/donors")
@@ -134,7 +151,7 @@ def donors():
         # replace naughty characters in donor name
         donor_name = donor_name.replace("'", "")
         d[donor_name] = {}
-        for i in list(range(1,len(myKeys))):
+        for i in list(range(1, len(myKeys))):
             d[donor_name][myKeys[i]] = tuple(stats)[i]
         # add top 10 recipients to donor entry
         d[donor_name]['recipients'] = {}
@@ -144,9 +161,12 @@ def donors():
                order by c.amount desc LIMIT 10")
         topRecipients = tuple(cur.fetchall())
         for i in range(len(topRecipients)):
-            d[donor_name]['recipients'][i] = topRecipients[i][0] + " " + topRecipients[i][1]
-            d[donor_name]['recipients_amount'][i] = '${:,.0f}'.format(topRecipients[i][2])
+            d[donor_name]['recipients'][i] = topRecipients[i][0] + \
+                " " + topRecipients[i][1]
+            d[donor_name]['recipients_amount'][i] = '${:,.0f}'.format(
+                topRecipients[i][2])
     return jsonify(d)
+
 
 @app.route("/api/summary")
 def summary_info():
@@ -155,7 +175,7 @@ def summary_info():
     # con = psycopg2.connect(DATABASE_URL) #db?
     cur = con.cursor()
     # initialize dictionary
-    d= {}
+    d = {}
 
     # Query biggest recipients
     cur.execute("SELECT first_name, last_name, sum(amount) as total FROM donations, legislators \
@@ -213,7 +233,7 @@ def summary_info():
         names.append(republicanInfo[i][2] + " " + republicanInfo[i][3])
     d["republican_info"]["ages"] = ages
     d["republican_info"]["amounts"] = amounts
-    d["republican_info"]["names"] =  names
+    d["republican_info"]["names"] = names
 
     # Query ages and amount (Independent)
     d["independent_info"] = {}
@@ -230,9 +250,10 @@ def summary_info():
         names.append(independentInfo[i][2] + " " + independentInfo[i][3])
     d["independent_info"]["ages"] = ages
     d["independent_info"]["amounts"] = amounts
-    d["independent_info"]["names"] =  names
+    d["independent_info"]["names"] = names
 
     return jsonify(d)
+
 
 @app.route("/api/<first_name>+<last_name>")
 def legislator_detail(first_name, last_name):
@@ -258,6 +279,7 @@ def legislator_detail(first_name, last_name):
 
     return jsonify(d)
 
+
 @app.route("/api/test")
 def test():
     # connect to database
@@ -270,6 +292,7 @@ def test():
     results = tuple(cur.fetchall())
     d = results
     return jsonify(d)
+
 
 if __name__ == "__main__":
     app.run()
