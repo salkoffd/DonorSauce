@@ -85,9 +85,10 @@ def legislators():
                 ) t JOIN legislators l ON l.id=t.legislator")
     results = cur.fetchall()
     print(results[0])
-    print(results)
     # get column names
-    myKeys = results[0].keys()
+    # myKeys = results[0].keys()
+    myKeys = [desc[0] for desc in cur.description]
+    print(myKeys)
     # build dictionary
     d = {}
     for i, stats in enumerate(results):
