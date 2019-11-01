@@ -249,14 +249,34 @@ def legislator_detail(first_name, last_name):
                 ORDER BY donations.amount desc"
     cur.execute(statement)
     results = tuple(cur.fetchall())
+    # # construct dictionary
+    # d = {}
+    # d['recipient'] = first_name + " " + last_name
+    # donorInfo = []
+    # for i in range(len(results)):
+    #     n = results[i][0] + ", " + '${:,.0f}'.format(results[i][1])
+    #     donorInfo.append(n)
+    # d["donors"] = donorInfo
+
     # construct dictionary
     d = {}
-    d['recipient'] = first_name + " " + last_name
     donorInfo = []
     for i in range(len(results)):
         n = results[i][0] + ", " + '${:,.0f}'.format(results[i][1])
         donorInfo.append(n)
     d["donors"] = donorInfo
+
+    # get legislator info about self
+    cur.execute("SELECT party, age, state, district, leg_type, url FROM legislators \
+                WHERE first_name = '{}' AND last_name = '{}'".format(first_name, last_name))
+    results = cur.fetchall()
+    # get column names
+    myKeys = [desc[0] for desc in cur.description]
+    # build dictionary
+    d['legislator_info'] = {}
+    d['legislator_info']['name'] = first_name + " " + last_name
+    for i in range(len(myKeys)):
+        d['legislator_info'][myKeys[i]] = tuple(results)[0][i]
 
     return jsonify(d)
 
