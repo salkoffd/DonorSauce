@@ -5,10 +5,6 @@ import json
 import psycopg2
 from decimal import Decimal
 
-from sqlalchemy import func
-
-# import flask
-# import flask.json
 from flask import (
     Flask,
     render_template,
@@ -17,6 +13,7 @@ from flask import (
     redirect)
 
 import sqlalchemy
+from sqlalchemy import func
 from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.orm import Session
 from sqlalchemy import create_engine
@@ -25,50 +22,9 @@ from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
 
-
-
-# class MyJSONEncoder(flask.json.JSONEncoder):
-#     def default(self, obj):
-#         if isinstance(obj, decimal.Decimal):
-#             # Convert decimal instances to strings.
-#             return str(obj)
-#         return super(MyJSONEncoder, self).default(obj)
-
-# app.json_encoder = MyJSONEncoder  # to make jsons from objects with decimals in them
-
-
 DATABASE_URL = os.environ['DATABASE_URL']
-# DATABASE_URL = "dbname=donorsauce user=postgres password=david8242"
-
-# DATABASE_URL = 'postgresql+psycopg2://{user}:{pw}@{url}/{db}'.format(user="postgres",pw="david8242",url="127.0.0.1:5432",db="donorsauce")
-# print("database string= " + DATABASE_URL)
-# app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
-# app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False # silence the deprecation warning
-# db = SQLAlchemy(app)
-
-# app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
-
-
-# db = SQLAlchemy(app)
-
-# # reflect an existing database into a new model
-# Base = automap_base()
-# # reflect the tables
-# Base.prepare(db.engine, reflect=True)
-
-# # Save references to each table
-# Legislators = Base.classes.legislators
-# Donors = Base.classes.donors
-# Donations = Base.classes.donations
 
 # -------------------------------------------------------------------------
-
-
-# @app.before_first_request
-# def setup():
-#     # Recreate database each time for demo
-#     db.drop_all()
-#     db.create_all()
 
 # create route that renders index.html template
 @app.route("/")
@@ -100,11 +56,8 @@ def legislators():
                     GROUP BY legislator \
                 ) t JOIN legislators l ON l.id=t.legislator")
     results = cur.fetchall()
-    print(results[0])
     # get column names
-    # myKeys = results[0].keys()
     myKeys = [desc[0] for desc in cur.description]
-    print(myKeys)
     # build dictionary
     d = {}
     for i, stats in enumerate(results):
@@ -146,7 +99,7 @@ def donors():
     cur.execute("SELECT * FROM donors")
     results = cur.fetchall()
     # get column names
-    myKeys = results[0].keys()
+    myKeys = [desc[0] for desc in cur.description]
     # build dictionary
     d = {}
     for stats in results:
@@ -181,9 +134,13 @@ def summary_info():
     d = {}
 
     # Query biggest recipients
-    cur.execute("SELECT first_name, last_name, sum(amount) as total FROM donations, legislators \
-    WHERE donations.legislator = legislators.id GROUP BY legislators.id \
-    ORDER BY total DESC LIMIT 5")
+    cur.execute("SELECT s.first_name, s.last_name, d.total \
+        FROM ( \
+	        SELECT sum(amount) as total, legislator \
+	        FROM donations \
+	        GROUP BY legislator \
+        ) d JOIN legislators s ON s.id=d.legislator \
+        ORDER BY d.total DESC LIMIT 5")
     topRecipients = tuple(cur.fetchall())
     names = []
     amounts = []
@@ -206,9 +163,16 @@ def summary_info():
 
     # Query ages and amount (Democrats)
     d["democrat_info"] = {}
-    cur.execute("SELECT age, sum(amount) as total, first_name, last_name FROM donations, legislators \
-    WHERE donations.legislator=legislators.id AND legislators.party='Democrat' \
-    GROUP BY legislators.id ORDER BY age DESC")
+    cur.execute("SELECT s.age, d.total, s.first_name, s.last_name \
+            FROM ( \
+	            SELECT sum(amount) as total, legislator \
+	            FROM donations \
+	            GROUP BY legislator \
+            ) d \
+            JOIN ( \
+	            SELECT * FROM legislators WHERE party='Democrat' \
+            ) s ON s.id=d.legislator \
+            ORDER BY s.age DESC")
     democratInfo = tuple(cur.fetchall())
     ages = []
     amounts = []
@@ -223,9 +187,16 @@ def summary_info():
 
     # Query ages and amount (Republicans)
     d["republican_info"] = {}
-    cur.execute("SELECT age, sum(amount) as total, first_name, last_name FROM donations, legislators \
-    WHERE donations.legislator=legislators.id AND legislators.party='Republican' \
-    GROUP BY legislators.id ORDER BY age DESC")
+    cur.execute("SELECT s.age, d.total, s.first_name, s.last_name \
+            FROM ( \
+	            SELECT sum(amount) as total, legislator \
+	            FROM donations \
+	            GROUP BY legislator \
+            ) d \
+            JOIN ( \
+	            SELECT * FROM legislators WHERE party='Republican' \
+            ) s ON s.id=d.legislator \
+            ORDER BY s.age DESC")
     republicanInfo = tuple(cur.fetchall())
     ages = []
     amounts = []
@@ -240,9 +211,16 @@ def summary_info():
 
     # Query ages and amount (Independent)
     d["independent_info"] = {}
-    cur.execute("SELECT age, sum(amount) as total, first_name, last_name FROM donations, legislators \
-    WHERE donations.legislator=legislators.id AND legislators.party='Independent' \
-    GROUP BY legislators.id ORDER BY age DESC")
+    cur.execute("SELECT s.age, d.total, s.first_name, s.last_name \
+            FROM ( \
+	            SELECT sum(amount) as total, legislator \
+	            FROM donations \
+	            GROUP BY legislator \
+            ) d \
+            JOIN ( \
+	            SELECT * FROM legislators WHERE party='Independent' \
+            ) s ON s.id=d.legislator \
+            ORDER BY s.age DESC")
     independentInfo = tuple(cur.fetchall())
     ages = []
     amounts = []
@@ -280,20 +258,6 @@ def legislator_detail(first_name, last_name):
         donorInfo.append(n)
     d["donors"] = donorInfo
 
-    return jsonify(d)
-
-
-@app.route("/api/test")
-def test():
-    # connect to database
-    con = psycopg2.connect(DATABASE_URL, sslmode='require')
-    cur = con.cursor()
-    # get legislator info
-    statement = "SELECT first_name, last_name FROM legislators \
-                WHERE legislators.first_name = 'Bernard' AND legislators.last_name = 'Sanders'"
-    cur.execute(statement)
-    results = tuple(cur.fetchall())
-    d = results
     return jsonify(d)
 
 
